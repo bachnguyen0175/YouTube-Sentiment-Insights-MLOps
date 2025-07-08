@@ -1,0 +1,46 @@
+artifacts_root: data
+
+
+data_ingestion:
+  root_dir: data/raw
+  source_URL: https://raw.githubusercontent.com/Himanshu-1703/reddit-sentiment-analysis/refs/heads/main/data/reddit.csv
+  local_data_file: data/raw/reddit_data.csv
+
+data_preprocessing:
+  root_dir: data/interim
+  preprocessed_data_path: data/interim/preprocessed_data.csv
+  train_test_split_path: data/interim/train_test_split.pkl
+  train_processed_csv: data/interim/train_processed.csv
+  test_processed_csv: data/interim/test_processed.csv
+
+
+model_building:
+  root_dir: model
+  trained_model_path: lgbm_model.pkl
+  vectorizer_path: tfidf_vectorizer.pkl
+
+
+model_evaluation:
+  root_dir: model
+  experiment_info_path: experiment_info.json
+
+
+model_registry:
+  root_dir: .
+  registered_model_path: ./
+  model_name: "reddit_sentiment_lgbm"
+  model_version: "1.0.0"
+  model_stage: "production"
+
+
+deployment:
+  root_dir: model
+  model_path: model/lgbm_model.pkl
+  vectorizer_path: model/tfidf_vectorizer.pkl
+  
+
+prediction_service:
+  model_path: model/lgbm_model.pkl
+  vectorizer_path: model/tfidf_vectorizer.pkl
+  max_sequence_length: 1000
+  batch_size: 32

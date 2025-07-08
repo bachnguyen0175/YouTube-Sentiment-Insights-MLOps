@@ -1,0 +1,6 @@
+// This is a template file.
+// 1. Make a copy of this file and rename it to 'config.js'.
+// 2. Replace the placeholder value below with your actual YouTube Data API key.
+// The 'config.js' file is already listed in .gitignore to ensure your key is not committed.
+
+const API_KEY = 'YOUR_YOUTUBE_API_KEY_HERE';

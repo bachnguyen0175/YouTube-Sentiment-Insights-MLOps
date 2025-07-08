@@ -1,0 +1,14 @@
+data_ingestion:
+  test_size: 0.20
+
+model_building:
+  ngram_range: [1, 3]  
+  max_features: 1000
+  learning_rate: 0.09
+  max_depth: 20
+  n_estimators: 367
+
+mlflow_config:
+  mlflow_uri: "http://ec2-54-167-108-249.compute-1.amazonaws.com:5000/"
+  model_name: "my_model"
+  experiment_name: "dvc-pipeline-runs"
