@@ -69,8 +69,6 @@ venv.bak/
 
 # DVC tracked files
 # These are handled by DVC, so they should not be in Git
-data/
-model/
 research/reddit_preprocessing.csv
 
 # Logs
