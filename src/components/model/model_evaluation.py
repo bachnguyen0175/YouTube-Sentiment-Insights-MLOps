@@ -12,6 +12,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import json
 from mlflow.models import infer_signature
+from dotenv import load_dotenv
+from datetime import datetime
+
+# Load environment variables from .env file
+load_dotenv()
 
 # logging configuration
 log_dir = "logs"
@@ -127,50 +132,67 @@ def save_model_info(run_id: str, model_path: str, file_path: str) -> None:
 
 def main():
     # Load parameters from YAML file to get MLflow URI
-    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-    params = load_params(os.path.join(root_dir, 'params.yaml'))
+    params = load_params('params.yaml')
     
-    mlflow.set_tracking_uri(params['mlflow_config']['mlflow_uri'])
-    mlflow.set_experiment(params['mlflow_config']['experiment_name'])
+    mlflow_config = params['mlflow_config']
+    mlflow.set_tracking_uri(mlflow_config['mlflow_uri'])
+
+    # Set experiment with a logical artifact location
+    experiment_name = mlflow_config['experiment_name']
+    artifact_location = f"{mlflow_config['artifact_root']}/{experiment_name}"
     
-    with mlflow.start_run() as run:
+    # Create experiment if it does not exist
+    experiment = mlflow.get_experiment_by_name(experiment_name)
+    if experiment is None:
+        mlflow.create_experiment(experiment_name, artifact_location=artifact_location)
+    
+    mlflow.set_experiment(experiment_name)
+
+    # Generate a human-readable run name with a timestamp
+    run_name = f"{experiment_name}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    
+    with mlflow.start_run(run_name=run_name) as run:
         try:
             # Log parameters
             for key, value in params.items():
-                mlflow.log_param(key, value)
+                if key != 'mlflow_config': # Avoid logging mlflow config as a run parameter
+                    mlflow.log_param(key, value)
             
             # Load model and vectorizer
-            model = load_model(os.path.join(root_dir, 'lgbm_model.pkl'))
-            vectorizer = load_vectorizer(os.path.join(root_dir, 'tfidf_vectorizer.pkl'))
+            model = load_model('model/lgbm_model.pkl')
+            vectorizer = load_vectorizer('model/tfidf_vectorizer.pkl')
 
             # Load test data for signature inference
-            test_data = load_data(os.path.join(root_dir, 'data/interim/test_processed.csv'))
+            test_data = load_data('data/interim/test_processed.csv')
 
             # Prepare test data
             X_test_tfidf = vectorizer.transform(test_data['clean_comment'].values)
             y_test = test_data['category'].values
 
             # Create a DataFrame for signature inference (using first few rows as an example)
-            input_example = pd.DataFrame(X_test_tfidf.toarray()[:5], columns=vectorizer.get_feature_names_out())  # <--- Added for signature
+            input_example = pd.DataFrame(X_test_tfidf.toarray()[:5], columns=vectorizer.get_feature_names_out())
 
             # Infer the signature
-            signature = infer_signature(input_example, model.predict(X_test_tfidf[:5]))  # <--- Added for signature
+            signature = infer_signature(input_example, model.predict(X_test_tfidf[:5]))
+
+            # Use the run name as a subfolder for artifacts
+            artifact_subfolder = run_name
 
             # Log model with signature
             mlflow.sklearn.log_model(
-                model,
-                "lgbm_model",
-                signature=signature,  # <--- Added for signature
-                input_example=input_example  # <--- Added input example
+                sk_model=model,
+                artifact_path=artifact_subfolder, # Save artifacts in the named subfolder
+                registered_model_name="lgbm_model", # Use a simple, valid name for the model itself
+                signature=signature,
+                input_example=input_example
             )
 
-            # Save model info
-            # artifact_uri = mlflow.get_artifact_uri()
-            model_path = "lgbm_model"
+            # Save model info - the path for registration needs to point to the subfolder
+            model_path = artifact_subfolder
             save_model_info(run.info.run_id, model_path, 'experiment_info.json')
 
             # Log the vectorizer as an artifact
-            mlflow.log_artifact(os.path.join(root_dir, 'tfidf_vectorizer.pkl'))
+            mlflow.log_artifact('model/tfidf_vectorizer.pkl', artifact_path=artifact_subfolder)
 
             # Evaluate model and get metrics
             report, cm = evaluate_model(model, X_test_tfidf, y_test)

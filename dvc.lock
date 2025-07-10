@@ -1,0 +1,128 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: PYTHONPATH=. uv run python src/components/data/data_ingestion.py
+    deps:
+    - path: src/components/data/data_ingestion.py
+      hash: md5
+      md5: b0198fad018333ec739b271930c9e0a9
+      size: 3975
+      isexec: true
+    params:
+      params.yaml:
+        data_ingestion.test_size: 0.2
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: b855e2bab4e21078d44844fee5be9da3.dir
+      size: 6882906
+      nfiles: 2
+  data_preprocessing:
+    cmd: PYTHONPATH=. uv run python src/components/data/data_preprocessing.py
+    deps:
+    - path: data/raw/test.csv
+      hash: md5
+      md5: 295b88d81555e67a857db0337244e118
+      size: 1341252
+      isexec: true
+    - path: data/raw/train.csv
+      hash: md5
+      md5: 70faef66e6135c49f7f02db4a55e9fdd
+      size: 5541654
+      isexec: true
+    - path: src/components/data/data_preprocessing.py
+      hash: md5
+      md5: db2b103a3fc18d4b621e980ceb0bb683
+      size: 2472
+      isexec: true
+    - path: src/utils/common.py
+      hash: md5
+      md5: 245284f842577651bf45d5e844e30e4a
+      size: 12080
+      isexec: true
+    outs:
+    - path: data/interim
+      hash: md5
+      md5: a2bbccdc23dd271231099f8d5c99ff87.dir
+      size: 5098055
+      nfiles: 2
+  model_building:
+    cmd: PYTHONPATH=. uv run python src/components/model/model_building.py
+    deps:
+    - path: data/interim/train_processed.csv
+      hash: md5
+      md5: 86284f4698366b0f2ee05c211c0e9453
+      size: 4104889
+      isexec: true
+    - path: src/components/model/model_building.py
+      hash: md5
+      md5: 3d5651532a7bac31c8a5ff2f5e113461
+      size: 5027
+      isexec: true
+    params:
+      params.yaml:
+        model_building.learning_rate: 0.09
+        model_building.max_depth: 20
+        model_building.max_features: 1000
+        model_building.n_estimators: 367
+        model_building.ngram_range:
+        - 1
+        - 3
+    outs:
+    - path: model/lgbm_model.pkl
+      hash: md5
+      md5: 8023fe249a14af221a3e4f218e776044
+      size: 3904340
+      isexec: true
+    - path: model/tfidf_vectorizer.pkl
+      hash: md5
+      md5: d444a36b6bfea21afe3071c8ad5b34f0
+      size: 36871
+      isexec: true
+  model_evaluation:
+    cmd: PYTHONPATH=. uv run python src/components/model/model_evaluation.py
+    deps:
+    - path: data/interim/test_processed.csv
+      hash: md5
+      md5: 5b260b8114240fb9c541c0d07b150b14
+      size: 993166
+      isexec: true
+    - path: data/interim/train_processed.csv
+      hash: md5
+      md5: 86284f4698366b0f2ee05c211c0e9453
+      size: 4104889
+      isexec: true
+    - path: model/lgbm_model.pkl
+      hash: md5
+      md5: 8023fe249a14af221a3e4f218e776044
+      size: 3904340
+      isexec: true
+    - path: model/tfidf_vectorizer.pkl
+      hash: md5
+      md5: d444a36b6bfea21afe3071c8ad5b34f0
+      size: 36871
+      isexec: true
+    - path: src/components/model/model_evaluation.py
+      hash: md5
+      md5: 75089945448372921dc8ee051d6f3253
+      size: 7874
+      isexec: true
+    outs:
+    - path: experiment_info.json
+      hash: md5
+      md5: a6785ae0e790bd93d89a50936ee04675
+      size: 107
+      isexec: true
+  model_registration:
+    cmd: PYTHONPATH=. uv run python src/components/model/register_model.py
+    deps:
+    - path: experiment_info.json
+      hash: md5
+      md5: a6785ae0e790bd93d89a50936ee04675
+      size: 107
+      isexec: true
+    - path: src/components/model/register_model.py
+      hash: md5
+      md5: 78f39cb3d99b0885a092af9ecbdf9986
+      size: 3196
+      isexec: true

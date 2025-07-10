@@ -5,6 +5,7 @@ import mlflow
 import logging
 import os
 import yaml
+import time
 
 # logging configuration
 log_dir = "logs"
@@ -53,6 +54,9 @@ def load_model_info(file_path: str) -> dict:
         logger.error('Unexpected error occurred while loading the model info: %s', e)
         raise
 
+import time
+# ... (rest of the imports)
+
 def register_model(model_name: str, model_info: dict):
     """Register the model to the MLflow Model Registry."""
     try:
@@ -61,6 +65,9 @@ def register_model(model_name: str, model_info: dict):
         # Register the model
         model_version = mlflow.register_model(model_uri, model_name)
         
+        # Add a delay to allow artifacts to be fully available
+        time.sleep(10)
+
         # Transition the model to "Staging" stage
         client = mlflow.tracking.MlflowClient()
         client.transition_model_version_stage(
@@ -77,8 +84,7 @@ def register_model(model_name: str, model_info: dict):
 def main():
     try:
         # Load parameters from YAML file to get MLflow URI and model name
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-        params = load_params(os.path.join(root_dir, 'params.yaml'))
+        params = load_params('params.yaml')
         
         # Set up MLflow tracking URI
         mlflow.set_tracking_uri(params['mlflow_config']['mlflow_uri'])

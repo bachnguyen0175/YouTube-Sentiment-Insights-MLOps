@@ -90,7 +90,7 @@ def save_data(train_data: pd.DataFrame, test_data: pd.DataFrame, data_path: str)
 def main():
     try:
         # Load parameters from the params.yaml in the root directory
-        params = load_params(params_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../params.yaml'))
+        params = load_params(params_path='params.yaml')
         test_size = params['data_ingestion']['test_size']
         
         # Load data from the specified URL
@@ -103,7 +103,7 @@ def main():
         train_data, test_data = train_test_split(final_df, test_size=test_size, random_state=42)
         
         # Save the split datasets and create the raw folder if it doesn't exist
-        save_data(train_data, test_data, data_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data'))
+        save_data(train_data, test_data, data_path='data')
         
     except Exception as e:
         logger.error('Failed to complete the data ingestion process: %s', e)
