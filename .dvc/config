@@ -1,5 +1,5 @@
 [core]
     remote = myremote
 ['remote "myremote"']
-    url = s3://mlops-ytb/dvc
-    region = ap-southeast-1
+    url = s3://[bucket-name]/dvc
+    region = "your-region"
