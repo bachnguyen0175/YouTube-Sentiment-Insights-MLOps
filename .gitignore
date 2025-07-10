@@ -70,6 +70,10 @@ venv.bak/
 # DVC tracked files
 # These are handled by DVC, so they should not be in Git
 research/reddit_preprocessing.csv
+/model/lgbm_model.pkl
+/model/tfidf_vectorizer.pkl
+/data/
+/experiment_info.json
 
 # Logs
 logs/
