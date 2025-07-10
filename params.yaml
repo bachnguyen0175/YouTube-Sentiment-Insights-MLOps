@@ -10,6 +10,6 @@ model_building:
 
 mlflow_config:
   mlflow_uri: "http://ec2-18-142-177-109.ap-southeast-1.compute.amazonaws.com:5000/"
-  artifact_root: "s3://mlops-ytb/mlflow"
+  artifact_root: "s3://[bucket-name]/mlflow"
   model_name: "my_model"
   experiment_name: "dvc-pipeline-runs"
